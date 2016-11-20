@@ -142,6 +142,5 @@ func (v vtext) history() string {
 	for i, j := len(v), 2; i > 1; i, j = i-1, j+1 {
 		result = result + "vText" + strconv.Itoa(j) + "=" + v[i-1:i].string() + "&"
 	}
-	fmt.Printf("%s\n", result)
 	return result
 }
