@@ -22,6 +22,7 @@ var (
 	API_URL  = PROTOCOL + HOST + RESOURCE
 )
 
+//Holds history
 type vtext []string
 
 type Session struct {
@@ -81,10 +82,10 @@ func (s *Session) Ask(q string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	// Get session ID
 	s.Context_id = resp.Header.Get("CBCONVID")
-	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -104,6 +105,8 @@ func (s *Session) Ask(q string) (string, error) {
 	//Vtext
 	s.V = append(s.V, q)
 	s.V = append(s.V, url.QueryEscape(answer))
+
+	//Stop history from growing endlessly
 	if len(s.V) > s.History {
 		s.V = s.V[2:]
 	}
@@ -136,10 +139,9 @@ func (v vtext) history() string {
 		return ""
 	}
 	result := ""
-	j := 2
-	for i := len(v); i > 1; i-- {
+	for i, j := len(v), 2; i > 1; i, j = i-1, j+1 {
 		result = result + "vText" + strconv.Itoa(j) + "=" + v[i-1:i].string() + "&"
-		j++
 	}
+	fmt.Printf("%s\n", result)
 	return result
 }
