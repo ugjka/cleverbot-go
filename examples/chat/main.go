@@ -17,7 +17,7 @@ func main() {
 
 	// Start chat loop.
 	for scanner.Scan() {
-		response, err := Ask(cb, scanner.Text())
+		response, err := ask(cb, scanner.Text())
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -30,6 +30,6 @@ func main() {
 	}
 }
 
-func Ask(cb *cleverbot.Session, input string) (response string, err error) {
+func ask(cb *cleverbot.Session, input string) (response string, err error) {
 	return cb.Ask(input)
 }
