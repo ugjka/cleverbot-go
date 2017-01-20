@@ -18,7 +18,7 @@ import (
 var (
 	HOST     = "www.cleverbot.com"
 	PROTOCOL = "http://"
-	RESOURCE = "/webservicemin?uc=321&"
+	RESOURCE = "/webservicemin?uc=3210&"
 	API_URL  = PROTOCOL + HOST + RESOURCE
 )
 
@@ -30,15 +30,21 @@ type Session struct {
 	History    int
 	Context_id string
 	Client     *http.Client
+	//Clever bot now requires to identify your bot
+	//There is no official api
+	//But they will allow low usage bots
+	//They can kill your bot any time
+	BotApi string
 }
 
 // Creates a new session
-func New() *Session {
+func New(api string) *Session {
 	return &Session{
 		make([]string, 1),
 		16,
 		"",
 		&http.Client{},
+		api,
 	}
 }
 
@@ -61,7 +67,7 @@ func (s *Session) Ask(q string) (string, error) {
 	push = push + "&icognocheck=" + token
 
 	// Make the actual request
-	req, err := http.NewRequest("POST", API_URL, strings.NewReader(push))
+	req, err := http.NewRequest("POST", API_URL+"botapi="+s.BotApi+"&", strings.NewReader(push))
 	if err != nil {
 		return "", err
 	}
