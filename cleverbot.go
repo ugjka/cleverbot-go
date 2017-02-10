@@ -18,7 +18,7 @@ import (
 var (
 	HOST     = "www.cleverbot.com"
 	PROTOCOL = "http://"
-	RESOURCE = "/webservicemin?uc=3210&"
+	RESOURCE = "/webservicemin?uc=777&"
 	API_URL  = PROTOCOL + HOST + RESOURCE
 )
 
