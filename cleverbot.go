@@ -117,7 +117,7 @@ func (s *Session) Ask(q string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return s.Ask(q)
+		return "Error: ask again!", nil
 	}
 
 	//Vtext
