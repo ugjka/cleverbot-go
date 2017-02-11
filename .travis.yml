@@ -1,0 +1,16 @@
+language: go
+go:
+  - 1.x
+os:
+  - linux
+  - osx
+  - windows
+sudo: required
+before_install:
+  - go get github.com/golang/lint/golint
+  - go get -d ./...
+script:
+  - go build ./...
+  - go vet ./...
+  - golint -set_exit_status ./...
+  - go test -v -race ./...
