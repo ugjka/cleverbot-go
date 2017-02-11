@@ -1,73 +1,76 @@
-// Very simple go cleverbot wrapper
+// Package cleverbot a wrapper for cleverbot.com
 // To get a new session call New() and to ask call Session.Ask(question)
 package cleverbot
 
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"hash"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 var (
-	HOST     = "www.cleverbot.com"
-	PROTOCOL = "http://"
-	RESOURCE = "/webservicemin?uc=777&"
-	API_URL  = PROTOCOL + HOST + RESOURCE
+	host     = "www.cleverbot.com"
+	protocol = "http://"
+	resource = "/webservicemin?uc="
+	apiURL   = protocol + host + resource
 )
 
 //Holds history
 type vtext []string
 
+//Session is cleverbot session
 type Session struct {
-	V          vtext
-	History    int
-	Context_id string
-	Client     *http.Client
-	//Clever bot now requires to identify your bot
-	//There is no official api
-	//But they will allow low usage bots
-	//They can kill your bot any time
-	BotApi string
+	V         vtext
+	History   int
+	ContextID string
+	Client    *http.Client
+	APIID     string
 }
 
-// Creates a new session
-func New(api string) *Session {
+//New creates a new session
+func New() (*Session, error) {
+	apiID, err := getAPIID(protocol + host)
+	if err != nil {
+		return nil, err
+	}
 	return &Session{
 		make([]string, 1),
 		16,
 		"",
 		&http.Client{},
-		api,
-	}
+		apiID,
+	}, nil
 }
 
 // Ask cleverbot a question
 func (s *Session) Ask(q string) (string, error) {
 	q = url.QueryEscape(q)
-	push := ""
-	if s.Context_id == "" {
+	var push string
+	if s.ContextID == "" {
 		push = "stimulus=" + q + "&cb_settings_language=en&cb_settings_scripting=no&islearning=1&icognoid=wsf"
 	} else {
-		push = "stimulus=" + q + "&" + s.V.history() + "cb_settings_language=en&cb_settings_scripting=no&sessionid=" + s.Context_id + "&islearning=1&icognoid=wsf"
+		push = "stimulus=" + q + "&" + s.V.history() + "cb_settings_language=en&cb_settings_scripting=no&sessionid=" + s.ContextID + "&islearning=1&icognoid=wsf"
 	}
 
 	// A hash of part of the payload, cleverbot needs this for some reason
-	digest_txt := push[9:35]
+	digestTxt := push[9:35]
 	tokenMd5 := md5.New()
-	io.WriteString(tokenMd5, digest_txt)
+	io.WriteString(tokenMd5, digestTxt)
 	tokenbuf := hexDigest(tokenMd5)
 	token := tokenbuf.String()
 	push = push + "&icognocheck=" + token
 
 	// Make the actual request
-	req, err := http.NewRequest("POST", API_URL+"botapi="+s.BotApi+"&", strings.NewReader(push))
+	req, err := http.NewRequest("POST", apiURL+s.APIID+"&botapi=see%20www.cleverbot.com%2Fapis&", strings.NewReader(push))
 	if err != nil {
 		return "", err
 	}
@@ -75,12 +78,12 @@ func (s *Session) Ask(q string) (string, error) {
 	// Headers and a cookie, which cleverbot again will not work without
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36")
 	req.Header.Set("Content-Type", "text/plain;charset=UTF-8")
-	req.Header.Set("Host", HOST)
+	req.Header.Set("Host", host)
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	req.Header.Set("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.8,lv;q=0.6,ru;q=0.4,da;q=0.2")
-	req.Header.Set("Referer", PROTOCOL+HOST+"/")
+	req.Header.Set("Referer", protocol+host+"/")
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("Cookie", "XVIS=TEI939AFFIAGAYQZ")
 
@@ -91,7 +94,7 @@ func (s *Session) Ask(q string) (string, error) {
 	defer resp.Body.Close()
 
 	// Get session ID
-	s.Context_id = resp.Header.Get("CBCONVID")
+	s.ContextID = resp.Header.Get("CBCONVID")
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -106,6 +109,15 @@ func (s *Session) Ask(q string) (string, error) {
 			answer = string(res)
 			break
 		}
+	}
+
+	//Detect Api changes
+	if strings.Contains(answer, "<html>") {
+		s.APIID, err = getAPIID(protocol + host)
+		if err != nil {
+			return "", err
+		}
+		return s.Ask(q)
 	}
 
 	//Vtext
@@ -149,4 +161,39 @@ func (v vtext) history() string {
 		result = result + "vText" + strconv.Itoa(j) + "=" + v[i-1:i].string() + "&"
 	}
 	return result
+}
+
+func getter(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func getAPIID(url string) (string, error) {
+	body, err := getter(url)
+	if err != nil {
+		return "", err
+	}
+	getjs := regexp.MustCompile("(conversation-social-min.js\\?\\d+)")
+	jsfile := getjs.FindStringSubmatch(body)
+	if len(jsfile) < 2 {
+		return "", errors.New("No regex matches for conversation-social-min.js in index.html ")
+	}
+	body, err = getter(url + "/extras/" + jsfile[1])
+	if err != nil {
+		return "", err
+	}
+	getapi := regexp.MustCompile("\"uc=(\\d+)&botapi=\"")
+	apiID := getapi.FindStringSubmatch(body)
+	if len(apiID) < 2 {
+		return "", errors.New("No regex matches for api Id in conversation-social-min.js")
+	}
+	return apiID[1], nil
 }

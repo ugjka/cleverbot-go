@@ -10,7 +10,10 @@ import (
 )
 
 func main() {
-	cb := cleverbot.New("test_api_id")
+	cb, err := cleverbot.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("Press CTRL-C to exit.")
