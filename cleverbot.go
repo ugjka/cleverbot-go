@@ -17,6 +17,12 @@ import (
 	"strings"
 )
 
+var warning = `WARNING: cleverbot-go is against cleverbot.com terms of service, use at your own discretion!`
+
+func init() {
+	fmt.Println(warning)
+}
+
 var (
 	host     = "www.cleverbot.com"
 	protocol = "http://"
