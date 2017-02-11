@@ -2,3 +2,10 @@
 
 # cleverbot-go
 Cleverbot wrapper written in Go https://godoc.org/github.com/ugjka/cleverbot-go
+
+## Example
+
+```go
+session, _ := cleverbot.New()
+answer, _ := session.Ask("How are you?")
+```
