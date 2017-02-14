@@ -196,7 +196,7 @@ func getAPIID(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	getapi := regexp.MustCompile("\"uc=(\\d+)&botapi=\"")
+	getapi := regexp.MustCompile("\"uc=(\\w+)&\"")
 	apiID := getapi.FindStringSubmatch(body)
 	if len(apiID) < 2 {
 		return "", errors.New("No regex matches for api Id in conversation-social-min.js")
