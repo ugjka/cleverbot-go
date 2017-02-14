@@ -76,7 +76,7 @@ func (s *Session) Ask(q string) (string, error) {
 	push = push + "&icognocheck=" + token
 
 	// Make the actual request
-	req, err := http.NewRequest("POST", apiURL+s.APIID+"&botapi=see%20www.cleverbot.com%2Fapis&", strings.NewReader(push))
+	req, err := http.NewRequest("POST", apiURL+s.APIID+"&", strings.NewReader(push))
 	if err != nil {
 		return "", err
 	}
