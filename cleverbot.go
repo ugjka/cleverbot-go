@@ -92,6 +92,7 @@ func (s *Session) Ask(question string) (string, error) {
 	if _, ok := s.decoder["cs"].(string); !ok {
 		return "", errors.New("cs: not a string")
 	}
+	//Set session context id
 	s.values.Set("cs", s.decoder["cs"].(string))
 
 	return s.decoder["output"].(string), nil
