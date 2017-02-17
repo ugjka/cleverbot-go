@@ -20,7 +20,7 @@ var (
 
 //Session is cleverbot session
 type Session struct {
-	Client  *http.Client
+	client  *http.Client
 	values  *url.Values
 	decoder map[string]interface{}
 }
@@ -29,6 +29,7 @@ type Session struct {
 func New(yourAPIKey string) *Session {
 	values := &url.Values{}
 	values.Set("key", yourAPIKey)
+	values.Set("wrapper", "cleverbot-go")
 
 	return &Session{
 		&http.Client{},
@@ -48,13 +49,13 @@ func (s *Session) Ask(question string) (string, error) {
 	}
 
 	// Headers
-	req.Header.Set("User-Agent", "cleverbot-go api wrapper, written in go")
+	req.Header.Set("User-Agent", "cleverbot-go https://github.com/ugjka/cleverbot-go")
 	req.Header.Set("Content-Type", "text/plain;charset=UTF-8")
 	req.Header.Set("Host", host)
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Pragma", "no-cache")
 
-	resp, err := s.Client.Do(req)
+	resp, err := s.client.Do(req)
 	if err != nil {
 		return "", err
 	}
