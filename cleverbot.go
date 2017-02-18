@@ -50,8 +50,6 @@ func (s *Session) Ask(question string) (string, error) {
 
 	// Headers
 	req.Header.Set("User-Agent", "cleverbot-go https://github.com/ugjka/cleverbot-go")
-	req.Header.Set("Content-Type", "text/plain;charset=UTF-8")
-	req.Header.Set("Host", host)
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Pragma", "no-cache")
 
@@ -63,20 +61,20 @@ func (s *Session) Ask(question string) (string, error) {
 	// Check for errors
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
-		return "", errors.New("401: unauthorised due to missing or invalid API key or POST request, the Cleverbot API only accepts GET requests")
+		return "", errors.New("Cleverbot API: key not valid")
 	case http.StatusNotFound:
-		return "", errors.New("404: API not found")
+		return "", errors.New("Cleverbot API: not found")
 	case http.StatusRequestEntityTooLarge:
-		return "", errors.New("413: request too large if you send a request over 16Kb")
+		return "", errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
 	case http.StatusBadGateway:
-		return "", errors.New("502: unable to get reply from API server, please contact us")
+		return "", errors.New("Cleverbot API:: unable to get reply from API server, please contact us")
 	case http.StatusGatewayTimeout:
-		return "", errors.New("504: unable to get reply from API server, please contact us")
+		return "", errors.New("Cleverbot API:: unable to get reply from API server, please contact us")
 	case http.StatusServiceUnavailable:
-		return "", errors.New("503: too many requests from a single IP address or API key")
+		return "", errors.New("Cleverbot API: Too many requests from client")
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return "", errors.New("Got " + string(resp.StatusCode) + " response code")
+			return "", errors.New("Cleverbot API: Error, " + string(resp.StatusCode) + " response code")
 		}
 	}
 	body, err := ioutil.ReadAll(resp.Body)
