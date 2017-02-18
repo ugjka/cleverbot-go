@@ -38,6 +38,12 @@ var (
 	ErrUnknown = errors.New("Cleverbot API: Response is not 200, unknown error")
 )
 
+//QAPair contains question and answer pair strings of an interaction
+type QAPair struct {
+	question string
+	answer   string
+}
+
 //Session is a cleverbot session.
 type Session struct {
 	sync.Mutex
@@ -154,4 +160,17 @@ func (s *Session) TimeElapsed() time.Duration {
 		return time.Second * -1
 	}
 	return dur
+}
+
+//History returns an arrary of QApairs of upto 50 interactions that have happened
+func (s *Session) History() []QAPair {
+	var qa []QAPair
+	for i := 1; ; i++ {
+		if v, ok := s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string); ok && v != "" {
+			qa = append([]QAPair{QAPair{s.decoder["interaction_"+strconv.Itoa(i)].(string),
+				s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string)}}, qa...)
+		} else {
+			return qa
+		}
+	}
 }
