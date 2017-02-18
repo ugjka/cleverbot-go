@@ -164,6 +164,8 @@ func (s *Session) TimeElapsed() time.Duration {
 
 //History returns an arrary of QApairs of upto 50 interactions that have happened
 func (s *Session) History() []QAPair {
+	s.Lock()
+	defer s.Unlock()
 	var qa []QAPair
 	for i := 1; ; i++ {
 		if v, ok := s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string); ok && v != "" {
