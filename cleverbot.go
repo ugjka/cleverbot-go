@@ -67,9 +67,9 @@ func (s *Session) Ask(question string) (string, error) {
 	case http.StatusRequestEntityTooLarge:
 		return "", errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
 	case http.StatusBadGateway:
-		return "", errors.New("Cleverbot API:: unable to get reply from API server, please contact us")
+		return "", errors.New("Cleverbot API: unable to get reply from API server, please contact us")
 	case http.StatusGatewayTimeout:
-		return "", errors.New("Cleverbot API:: unable to get reply from API server, please contact us")
+		return "", errors.New("Cleverbot API: unable to get reply from API server, please contact us")
 	case http.StatusServiceUnavailable:
 		return "", errors.New("Cleverbot API: Too many requests from client")
 	default:
@@ -85,10 +85,10 @@ func (s *Session) Ask(question string) (string, error) {
 		return "", err
 	}
 	if _, ok := s.decoder["output"].(string); !ok {
-		return "", errors.New("output: not a string")
+		return "", errors.New("Cleverbot API: 'output' is not a string")
 	}
 	if _, ok := s.decoder["cs"].(string); !ok {
-		return "", errors.New("cs: not a string")
+		return "", errors.New("Cleverbot API: 'cs' is not a string")
 	}
 	//Set session context id
 	s.values.Set("cs", s.decoder["cs"].(string))
