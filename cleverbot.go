@@ -166,7 +166,7 @@ func (s *Session) TimeElapsed() time.Duration {
 	return dur
 }
 
-//History returns an arrary of QApairs of upto 50 interactions that have happened.
+//History returns an arrary of QApairs of upto 100 interactions that have happened in Session.
 func (s *Session) History() []QAPair {
 	s.Lock()
 	defer s.Unlock()
