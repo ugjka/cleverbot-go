@@ -1,5 +1,5 @@
-// Package cleverbot a wrapper for cleverbot.com
-// To get a new session call New("YOURAPIKEY") and to ask call Session.Ask(question)
+// Package cleverbot a wrapper for cleverbot.com.
+// To get a new session call New("YOURAPIKEY") and to ask call Session.Ask(question).
 // Get the official API Key here http://www.cleverbot.com/api/
 package cleverbot
 
@@ -18,15 +18,15 @@ var (
 	apiURL   = protocol + host + resource
 )
 
-//Session is cleverbot session
+//Session is cleverbot session.
 type Session struct {
 	client  *http.Client
 	values  *url.Values
 	decoder map[string]interface{}
 }
 
-//New creates a new session
-//Get api key here: https://www.cleverbot.com/api/
+//New creates a new session.
+//Get api key here: https://www.cleverbot.com/api/.
 func New(yourAPIKey string) *Session {
 	values := &url.Values{}
 	values.Set("key", yourAPIKey)
@@ -39,7 +39,7 @@ func New(yourAPIKey string) *Session {
 	}
 }
 
-// Ask cleverbot a question
+// Ask cleverbot a question.
 func (s *Session) Ask(question string) (string, error) {
 	s.values.Set("input", question)
 
