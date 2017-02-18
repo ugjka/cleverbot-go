@@ -132,6 +132,9 @@ func (s *Session) Reset() {
 	s.Lock()
 	defer s.Unlock()
 	s.values.Del("cs")
+	for k := range s.decoder {
+		delete(s.decoder, k)
+	}
 }
 
 //InteractionCount gets the count of interactions that have happened between the bot and user
