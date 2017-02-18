@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
+	"sync"
+	"time"
 )
 
 //Api adress
@@ -37,6 +40,7 @@ var (
 
 //Session is a cleverbot session.
 type Session struct {
+	sync.Mutex
 	client  *http.Client
 	values  *url.Values
 	decoder map[string]interface{}
@@ -50,6 +54,7 @@ func New(yourAPIKey string) *Session {
 	values.Set("wrapper", "cleverbot-go")
 
 	return &Session{
+		sync.Mutex{},
 		&http.Client{},
 		values,
 		make(map[string]interface{}),
@@ -58,6 +63,8 @@ func New(yourAPIKey string) *Session {
 
 // Ask asks cleverbot a question.
 func (s *Session) Ask(question string) (string, error) {
+	s.Lock()
+	defer s.Unlock()
 	s.values.Set("input", question)
 
 	// Make the actual request
@@ -112,4 +119,39 @@ func (s *Session) Ask(question string) (string, error) {
 	s.values.Set("cs", s.decoder["cs"].(string))
 
 	return s.decoder["output"].(string), nil
+}
+
+//Reset resets the session, meaning a new Ask() call will appear as new conversation from bots point of view
+func (s *Session) Reset() {
+	s.Lock()
+	defer s.Unlock()
+	s.values.Del("cs")
+}
+
+//InteractionCount gets the count of interactions that have happened between the bot and user
+//Returns -1 if interactions_count is missing or an error occurred
+func (s *Session) InteractionCount() int {
+	s.Lock()
+	defer s.Unlock()
+	if _, ok := s.decoder["interaction_count"].(string); !ok {
+		return -1
+	}
+	if count, err := strconv.Atoi(s.decoder["interaction_count"].(string)); err == nil {
+		return count
+	}
+	return -1
+}
+
+//TimeElapsed returns approximate duration since conversation started, returns -1 seconds on error or if time_elapsed is not found
+func (s *Session) TimeElapsed() time.Duration {
+	s.Lock()
+	defer s.Unlock()
+	if _, ok := s.decoder["time_elapsed"].(string); !ok {
+		return time.Second * -1
+	}
+	dur, err := time.ParseDuration(s.decoder["time_elapsed"].(string) + "s")
+	if err != nil {
+		return time.Second * -1
+	}
+	return dur
 }
