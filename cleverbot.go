@@ -9,14 +9,30 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
+//Api adress
 var (
 	host     = "www.cleverbot.com"
 	protocol = "http://"
 	resource = "/getreply?"
 	apiURL   = protocol + host + resource
+)
+
+//Errors
+var (
+	//ErrKeyNotValid is returned when API key is not valid
+	ErrKeyNotValid = errors.New("Cleverbot API: key not valid")
+	//ErrAPINotFound is returned when API returns 404
+	ErrAPINotFound = errors.New("Cleverbot API: not found")
+	//ErrRequestTooLarge is returned when GET request to the api exceeds 16K
+	ErrRequestTooLarge = errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
+	//ErrNoReply is returned when api is down
+	ErrNoReply = errors.New("Cleverbot API: unable to get reply from API server, please contact us")
+	//ErrTooManyRequests is returned when there is too many requests made to the api
+	ErrTooManyRequests = errors.New("Cleverbot API: Too many requests from client")
+	//ErrUnknown is returned when response status code is not 200
+	ErrUnknown = errors.New("Cleverbot API: Response is not 200, unknown error")
 )
 
 //Session is a cleverbot session.
@@ -63,20 +79,20 @@ func (s *Session) Ask(question string) (string, error) {
 	// Check for errors
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
-		return "", errors.New("Cleverbot API: key not valid")
+		return "", ErrKeyNotValid
 	case http.StatusNotFound:
-		return "", errors.New("Cleverbot API: not found")
+		return "", ErrAPINotFound
 	case http.StatusRequestEntityTooLarge:
-		return "", errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
+		return "", ErrRequestTooLarge
 	case http.StatusBadGateway:
-		return "", errors.New("Cleverbot API: unable to get reply from API server, please contact us")
+		return "", ErrNoReply
 	case http.StatusGatewayTimeout:
-		return "", errors.New("Cleverbot API: unable to get reply from API server, please contact us")
+		return "", ErrNoReply
 	case http.StatusServiceUnavailable:
-		return "", errors.New("Cleverbot API: Too many requests from client")
+		return "", ErrTooManyRequests
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return "", errors.New("Cleverbot API: Error, " + strconv.Itoa(resp.StatusCode) + " response code")
+			return "", ErrUnknown
 		}
 	}
 	body, err := ioutil.ReadAll(resp.Body)
