@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 var (
@@ -75,7 +76,7 @@ func (s *Session) Ask(question string) (string, error) {
 		return "", errors.New("Cleverbot API: Too many requests from client")
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return "", errors.New("Cleverbot API: Error, " + string(resp.StatusCode) + " response code")
+			return "", errors.New("Cleverbot API: Error, " + strconv.Itoa(resp.StatusCode) + " response code")
 		}
 	}
 	body, err := ioutil.ReadAll(resp.Body)
