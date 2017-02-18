@@ -1,6 +1,6 @@
-// Package cleverbot a wrapper for cleverbot.com.
+// Package cleverbot is a wrapper for cleverbot.com api.
 // To get a new session call New("YOURAPIKEY") and to ask call Session.Ask(question).
-// Get the official API Key here http://www.cleverbot.com/api/
+// Get the official API Key here http://www.cleverbot.com/api/ .
 package cleverbot
 
 import (
@@ -39,7 +39,7 @@ func New(yourAPIKey string) *Session {
 	}
 }
 
-// Ask cleverbot a question.
+// Ask asks cleverbot a question.
 func (s *Session) Ask(question string) (string, error) {
 	s.values.Set("input", question)
 
