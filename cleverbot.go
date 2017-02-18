@@ -18,7 +18,7 @@ var (
 	apiURL   = protocol + host + resource
 )
 
-//Session is cleverbot session.
+//Session is a cleverbot session.
 type Session struct {
 	client  *http.Client
 	values  *url.Values
