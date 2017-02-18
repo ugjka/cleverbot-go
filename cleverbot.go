@@ -40,8 +40,8 @@ var (
 
 //QAPair contains question and answer pair strings of an interaction
 type QAPair struct {
-	question string
-	answer   string
+	Question string
+	Answer   string
 }
 
 //Session is a cleverbot session.
