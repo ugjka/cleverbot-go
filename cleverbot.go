@@ -26,6 +26,7 @@ type Session struct {
 }
 
 //New creates a new session
+//Get api key here: https://www.cleverbot.com/api/
 func New(yourAPIKey string) *Session {
 	values := &url.Values{}
 	values.Set("key", yourAPIKey)
