@@ -172,7 +172,7 @@ func (s *Session) History() []QAPair {
 	var qa []QAPair
 	for i := 1; ; i++ {
 		if v, ok := s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string); ok && v != "" {
-			qa = append([]QAPair{QAPair{s.decoder["interaction_"+strconv.Itoa(i)].(string),
+			qa = append([]QAPair{{s.decoder["interaction_"+strconv.Itoa(i)].(string),
 				s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string)}}, qa...)
 		} else {
 			return qa
