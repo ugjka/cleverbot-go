@@ -165,6 +165,20 @@ func (s *Session) TimeElapsed() time.Duration {
 	return dur
 }
 
+//TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
+func (s *Session) TimeTaken() time.Duration {
+	s.Lock()
+	defer s.Unlock()
+	if _, ok := s.decoder["time_taken"].(string); !ok {
+		return time.Second * -1
+	}
+	dur, err := time.ParseDuration(s.decoder["time_taken"].(string) + "ms")
+	if err != nil {
+		return time.Second * -1
+	}
+	return dur
+}
+
 //History returns an array of QApairs of upto 100 interactions that have happened in Session.
 func (s *Session) History() []QAPair {
 	s.Lock()
