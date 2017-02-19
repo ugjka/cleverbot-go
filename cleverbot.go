@@ -1,5 +1,4 @@
 // Package cleverbot is a wrapper for cleverbot.com api.
-// To get a new session call New("YOURAPIKEY") and to ask call Session.Ask(question).
 // Get the official API Key here http://www.cleverbot.com/api/ .
 package cleverbot
 
@@ -14,7 +13,7 @@ import (
 	"time"
 )
 
-//Api adress.
+//Api address.
 var (
 	host     = "www.cleverbot.com"
 	protocol = "http://"
@@ -166,7 +165,7 @@ func (s *Session) TimeElapsed() time.Duration {
 	return dur
 }
 
-//History returns an arrary of QApairs of upto 100 interactions that have happened in Session.
+//History returns an array of QApairs of upto 100 interactions that have happened in Session.
 func (s *Session) History() []QAPair {
 	s.Lock()
 	defer s.Unlock()
