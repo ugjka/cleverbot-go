@@ -5,6 +5,7 @@ package cleverbot
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -41,6 +42,25 @@ var (
 type QAPair struct {
 	Question string
 	Answer   string
+}
+
+//QAPairs is a slice of QAPair
+type QAPairs []QAPair
+
+func (q QAPair) String() string {
+	return fmt.Sprintf("Question: %s Answer: %s", q.Question, q.Answer)
+}
+
+func (q QAPairs) String() string {
+	result := ""
+	for i, pair := range q {
+		if i+1 == len(q) {
+			result += fmt.Sprintf("%d: %s", i+1, pair)
+		} else {
+			result += fmt.Sprintf("%d: %s\n", i+1, pair)
+		}
+	}
+	return result
 }
 
 //Session is a cleverbot session.
@@ -179,8 +199,8 @@ func (s *Session) TimeTaken() time.Duration {
 	return dur
 }
 
-//History returns an array of QApairs of upto 100 interactions that have happened in Session.
-func (s *Session) History() []QAPair {
+//History returns an array of QApair of upto 100 interactions that have happened in Session.
+func (s *Session) History() QAPairs {
 	s.Lock()
 	defer s.Unlock()
 	var qa []QAPair
