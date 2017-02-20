@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-//Api address.
+// Api address.
 var (
 	host     = "www.cleverbot.com"
 	protocol = "http://"
@@ -22,29 +22,29 @@ var (
 	apiURL   = protocol + host + resource
 )
 
-//Errors.
+// Errors.
 var (
-	//ErrKeyNotValid is returned when API key is not valid.
+	// ErrKeyNotValid is returned when API key is not valid.
 	ErrKeyNotValid = errors.New("Cleverbot API: key not valid")
-	//ErrAPINotFound is returned when API returns 404.
+	// ErrAPINotFound is returned when API returns 404.
 	ErrAPINotFound = errors.New("Cleverbot API: not found")
-	//ErrRequestTooLarge is returned when GET request to the api exceeds 16K.
+	// ErrRequestTooLarge is returned when GET request to the api exceeds 16K.
 	ErrRequestTooLarge = errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
-	//ErrNoReply is returned when api is down.
+	// ErrNoReply is returned when api is down.
 	ErrNoReply = errors.New("Cleverbot API: unable to get reply from API server, please contact us")
-	//ErrTooManyRequests is returned when there is too many requests made to the api.
+	// ErrTooManyRequests is returned when there is too many requests made to the api.
 	ErrTooManyRequests = errors.New("Cleverbot API: Too many requests from client")
-	//ErrUnknown is returned when response status code is not 200.
+	// ErrUnknown is returned when response status code is not 200.
 	ErrUnknown = errors.New("Cleverbot API: Response is not 200, unknown error")
 )
 
-//QAPair contains question and answer pair strings of an interaction.
+// QAPair contains question and answer pair strings of an interaction.
 type QAPair struct {
 	Question string
 	Answer   string
 }
 
-//QAPairs is a slice of QAPair
+// QAPairs is a slice of QAPair
 type QAPairs []QAPair
 
 func (q QAPair) String() string {
@@ -63,7 +63,7 @@ func (q QAPairs) String() string {
 	return result
 }
 
-//Session is a cleverbot session.
+// Session is a cleverbot session.
 type Session struct {
 	sync.Mutex
 	client  *http.Client
@@ -71,8 +71,8 @@ type Session struct {
 	decoder map[string]interface{}
 }
 
-//New creates a new session.
-//Get api key here: https://www.cleverbot.com/api/ .
+// New creates a new session.
+// Get api key here: https://www.cleverbot.com/api/ .
 func New(yourAPIKey string) *Session {
 	values := &url.Values{}
 	values.Set("key", yourAPIKey)
@@ -91,11 +91,11 @@ func (s *Session) Ask(question string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
 	s.values.Set("input", question)
-	//Clear the map, just in case of some leftovers
+	// Clear the map, just in case of some leftovers
 	for k := range s.decoder {
 		delete(s.decoder, k)
 	}
-	// Make the actual request.
+	// Prepare the request.
 	req, err := http.NewRequest("GET", apiURL+s.values.Encode(), nil)
 	if err != nil {
 		return "", err
@@ -104,6 +104,7 @@ func (s *Session) Ask(question string) (string, error) {
 	// Headers.
 	req.Header.Set("User-Agent", "cleverbot-go https://github.com/ugjka/cleverbot-go")
 
+	// Make the request
 	resp, err := s.client.Do(req)
 	if err != nil {
 		return "", err
@@ -141,13 +142,13 @@ func (s *Session) Ask(question string) (string, error) {
 	if _, ok := s.decoder["cs"].(string); !ok {
 		return "", errors.New("Cleverbot API: 'cs' is not a string")
 	}
-	//Set session context id.
+	// Set session context id.
 	s.values.Set("cs", s.decoder["cs"].(string))
 
 	return s.decoder["output"].(string), nil
 }
 
-//Reset resets the session, meaning a new Ask() call will appear as new conversation from bots point of view.
+// Reset resets the session, meaning a new Ask() call will appear as new conversation from bots point of view.
 func (s *Session) Reset() {
 	s.Lock()
 	defer s.Unlock()
@@ -158,8 +159,8 @@ func (s *Session) Reset() {
 	}
 }
 
-//InteractionCount gets the count of interactions that have happened between the bot and user.
-//Returns -1 if interactions_count is missing or an error occurred.
+// InteractionCount gets the count of interactions that have happened between the bot and user.
+// Returns -1 if interactions_count is missing or an error occurred.
 func (s *Session) InteractionCount() int {
 	s.Lock()
 	defer s.Unlock()
@@ -171,7 +172,7 @@ func (s *Session) InteractionCount() int {
 	return -1
 }
 
-//TimeElapsed returns approximate duration since conversation started. Returns -1 seconds on error or if time_elapsed is not found
+// TimeElapsed returns approximate duration since conversation started. Returns -1 seconds on error or if time_elapsed is not found
 func (s *Session) TimeElapsed() time.Duration {
 	s.Lock()
 	defer s.Unlock()
@@ -183,7 +184,7 @@ func (s *Session) TimeElapsed() time.Duration {
 	return time.Second * -1
 }
 
-//TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
+// TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
 func (s *Session) TimeTaken() time.Duration {
 	s.Lock()
 	defer s.Unlock()
@@ -195,7 +196,7 @@ func (s *Session) TimeTaken() time.Duration {
 	return time.Second * -1
 }
 
-//History returns an array of QApair of upto 100 interactions that have happened in Session.
+// History returns an array of QApair of upto 100 interactions that have happened in Session.
 func (s *Session) History() QAPairs {
 	s.Lock()
 	defer s.Unlock()
