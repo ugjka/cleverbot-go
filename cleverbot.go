@@ -65,7 +65,7 @@ func (q QAPairs) String() string {
 
 // Session is a cleverbot session.
 type Session struct {
-	sync.Mutex
+	mu      sync.Mutex
 	client  *http.Client
 	values  *url.Values
 	decoder map[string]interface{}
@@ -88,8 +88,8 @@ func New(yourAPIKey string) *Session {
 
 // Ask asks cleverbot a question.
 func (s *Session) Ask(question string) (string, error) {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.values.Set("input", question)
 	// Clear previous json, just in case
 	s.clear()
@@ -148,8 +148,8 @@ func (s *Session) Ask(question string) (string, error) {
 
 // Reset resets the session, meaning a new Ask() call will appear as new conversation from bots point of view.
 func (s *Session) Reset() {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.values.Del("cs")
 	// Clear the json map
 	s.clear()
@@ -158,8 +158,8 @@ func (s *Session) Reset() {
 // InteractionCount gets the count of interactions that have happened between the bot and user.
 // Returns -1 if interactions_count is missing or an error occurred.
 func (s *Session) InteractionCount() int {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if v, ok := s.decoder["interaction_count"].(string); ok {
 		if count, err := strconv.Atoi(v); err == nil {
 			return count
@@ -170,8 +170,8 @@ func (s *Session) InteractionCount() int {
 
 // TimeElapsed returns approximate duration since conversation started. Returns -1 seconds on error or if time_elapsed is not found
 func (s *Session) TimeElapsed() time.Duration {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if v, ok := s.decoder["time_elapsed"].(string); ok {
 		if dur, err := time.ParseDuration(v + "s"); err == nil {
 			return dur
@@ -182,8 +182,8 @@ func (s *Session) TimeElapsed() time.Duration {
 
 // TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
 func (s *Session) TimeTaken() time.Duration {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if v, ok := s.decoder["time_taken"].(string); ok {
 		if dur, err := time.ParseDuration(v + "ms"); err == nil {
 			return dur
@@ -194,8 +194,8 @@ func (s *Session) TimeTaken() time.Duration {
 
 // History returns an array of QApair of upto 100 interactions that have happened in Session.
 func (s *Session) History() QAPairs {
-	s.Lock()
-	defer s.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	var qa []QAPair
 	for i := 1; ; i++ {
 		if v, ok := s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string); ok && v != "" {
