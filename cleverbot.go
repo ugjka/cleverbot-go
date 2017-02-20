@@ -91,7 +91,10 @@ func (s *Session) Ask(question string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
 	s.values.Set("input", question)
-
+	//Clear the map, just in case of some leftovers
+	for k := range s.decoder {
+		delete(s.decoder, k)
+	}
 	// Make the actual request.
 	req, err := http.NewRequest("GET", apiURL+s.values.Encode(), nil)
 	if err != nil {
