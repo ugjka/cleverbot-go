@@ -91,10 +91,8 @@ func (s *Session) Ask(question string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
 	s.values.Set("input", question)
-	// Clear the map, just in case of some leftovers
-	for k := range s.decoder {
-		delete(s.decoder, k)
-	}
+	// Clear previous json, just in case
+	s.clear()
 	// Prepare the request.
 	req, err := http.NewRequest("GET", apiURL+s.values.Encode(), nil)
 	if err != nil {
@@ -154,9 +152,7 @@ func (s *Session) Reset() {
 	defer s.Unlock()
 	s.values.Del("cs")
 	// Clear the json map
-	for k := range s.decoder {
-		delete(s.decoder, k)
-	}
+	s.clear()
 }
 
 // InteractionCount gets the count of interactions that have happened between the bot and user.
@@ -208,5 +204,12 @@ func (s *Session) History() QAPairs {
 		} else {
 			return qa
 		}
+	}
+}
+
+func (s *Session) clear() {
+	// Clear the map
+	for k := range s.decoder {
+		delete(s.decoder, k)
 	}
 }
