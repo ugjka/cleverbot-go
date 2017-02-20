@@ -156,7 +156,7 @@ func (s *Session) Reset() {
 }
 
 // InteractionCount gets the count of interactions that have happened between the bot and user.
-// Returns -1 if interactions_count is missing or an error occurred.
+// Returns -1 if interactions_count is missing or parsing failed.
 func (s *Session) InteractionCount() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -168,7 +168,8 @@ func (s *Session) InteractionCount() int {
 	return -1
 }
 
-// TimeElapsed returns approximate duration since conversation started. Returns -1 seconds on error or if time_elapsed is not found
+// TimeElapsed returns approximate duration since conversation started.
+// Returns -1 seconds if time_elapsed is not found or parsing failed.
 func (s *Session) TimeElapsed() time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -180,7 +181,8 @@ func (s *Session) TimeElapsed() time.Duration {
 	return time.Second * -1
 }
 
-// TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
+// TimeTaken returns the duration the bot took to respond.
+// Returns -1 second if time_taken not found or parsing failed.
 func (s *Session) TimeTaken() time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
