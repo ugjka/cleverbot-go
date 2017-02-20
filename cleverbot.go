@@ -103,8 +103,6 @@ func (s *Session) Ask(question string) (string, error) {
 
 	// Headers.
 	req.Header.Set("User-Agent", "cleverbot-go https://github.com/ugjka/cleverbot-go")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Pragma", "no-cache")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
