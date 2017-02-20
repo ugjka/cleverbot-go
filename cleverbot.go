@@ -165,11 +165,10 @@ func (s *Session) Reset() {
 func (s *Session) InteractionCount() int {
 	s.Lock()
 	defer s.Unlock()
-	if _, ok := s.decoder["interaction_count"].(string); !ok {
-		return -1
-	}
-	if count, err := strconv.Atoi(s.decoder["interaction_count"].(string)); err == nil {
-		return count
+	if v, ok := s.decoder["interaction_count"].(string); ok {
+		if count, err := strconv.Atoi(v); err == nil {
+			return count
+		}
 	}
 	return -1
 }
@@ -178,28 +177,24 @@ func (s *Session) InteractionCount() int {
 func (s *Session) TimeElapsed() time.Duration {
 	s.Lock()
 	defer s.Unlock()
-	if _, ok := s.decoder["time_elapsed"].(string); !ok {
-		return time.Second * -1
+	if v, ok := s.decoder["time_elapsed"].(string); ok {
+		if dur, err := time.ParseDuration(v + "s"); err == nil {
+			return dur
+		}
 	}
-	dur, err := time.ParseDuration(s.decoder["time_elapsed"].(string) + "s")
-	if err != nil {
-		return time.Second * -1
-	}
-	return dur
+	return time.Second * -1
 }
 
 //TimeTaken returns the duration the bot took to respond. Returns -1 second if not found or on error.
 func (s *Session) TimeTaken() time.Duration {
 	s.Lock()
 	defer s.Unlock()
-	if _, ok := s.decoder["time_taken"].(string); !ok {
-		return time.Second * -1
+	if v, ok := s.decoder["time_taken"].(string); ok {
+		if dur, err := time.ParseDuration(v + "ms"); err == nil {
+			return dur
+		}
 	}
-	dur, err := time.ParseDuration(s.decoder["time_taken"].(string) + "ms")
-	if err != nil {
-		return time.Second * -1
-	}
-	return dur
+	return time.Second * -1
 }
 
 //History returns an array of QApair of upto 100 interactions that have happened in Session.
