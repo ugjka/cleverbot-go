@@ -9,7 +9,7 @@ Cleverbot api wrapper written in Go
 ## Installation
     go get -u github.com/ugjka/cleverbot-go
 
-Check out the [godoc](https://github.com/ugjka/cleverbot-go), for methods
+Check out the [godoc](https://godoc.org/github.com/ugjka/cleverbot-go), for methods
 
 ## Example
 
