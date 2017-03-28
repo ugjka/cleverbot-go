@@ -198,9 +198,9 @@ func (s *Session) History() QAPairs {
 	defer s.mu.Unlock()
 	var qa []QAPair
 	for i := 1; ; i++ {
-		if v, ok := s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string); ok && v != "" {
-			qa = append([]QAPair{{s.decoder["interaction_"+strconv.Itoa(i)].(string),
-				s.decoder["interaction_"+strconv.Itoa(i)+"_other"].(string)}}, qa...)
+		if v, ok := s.decoder[fmt.Sprintf("interaction_%d_other", i)].(string); ok && v != "" {
+			qa = append([]QAPair{{s.decoder[fmt.Sprintf("interaction_%d", i)].(string),
+				s.decoder[fmt.Sprintf("interaction_%d_other", i)].(string)}}, qa...)
 		} else {
 			return qa
 		}
