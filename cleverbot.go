@@ -135,10 +135,10 @@ func (s *Session) Ask(question string) (string, error) {
 		return "", err
 	}
 	if _, ok := s.decoder["output"].(string); !ok {
-		return "", errors.New("Cleverbot API: 'output' does not exist or is not a string")
+		return "", fmt.Errorf("Cleverbot API: 'output' does not exist or is not a string")
 	}
 	if _, ok := s.decoder["cs"].(string); !ok {
-		return "", errors.New("Cleverbot API: 'cs' does not exist or is not a string")
+		return "", fmt.Errorf("Cleverbot API: 'cs' does not exist or is not a string")
 	}
 	// Set session context id.
 	s.values.Set("cs", s.decoder["cs"].(string))
