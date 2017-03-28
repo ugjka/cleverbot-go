@@ -34,8 +34,6 @@ var (
 	ErrNoReply = errors.New("Cleverbot API: unable to get reply from API server, please contact us")
 	// ErrTooManyRequests is returned when there is too many requests made to the api.
 	ErrTooManyRequests = errors.New("Cleverbot API: Too many requests from client")
-	// ErrUnknown is returned when response status code is not 200.
-	ErrUnknown = errors.New("Cleverbot API: Response is not 200, unknown error")
 )
 
 // QAPair contains question and answer pair strings of an interaction.
@@ -124,7 +122,7 @@ func (s *Session) Ask(question string) (string, error) {
 		return "", ErrTooManyRequests
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return "", ErrUnknown
+			return "", fmt.Errorf("Cleverbot API: Response status not OK, code %d", resp.StatusCode)
 		}
 	}
 	body, err := ioutil.ReadAll(resp.Body)
