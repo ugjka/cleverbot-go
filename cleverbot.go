@@ -64,7 +64,7 @@ func (q QAPairs) String() string {
 // Session is a cleverbot session.
 type Session struct {
 	mu      sync.Mutex
-	client  *http.Client
+	Client  *http.Client
 	values  *url.Values
 	decoder map[string]interface{}
 }
@@ -101,7 +101,7 @@ func (s *Session) Ask(question string) (string, error) {
 	req.Header.Set("User-Agent", "cleverbot-go https://github.com/ugjka/cleverbot-go")
 
 	// Make the request
-	resp, err := s.client.Do(req)
+	resp, err := s.Client.Do(req)
 	if err != nil {
 		return "", err
 	}
