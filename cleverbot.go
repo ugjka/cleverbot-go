@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -65,7 +64,7 @@ func (q QAPairs) String() string {
 type Session struct {
 	mu      sync.Mutex
 	Client  *http.Client
-	values  *url.Values
+	Values  *url.Values
 	decoder map[string]interface{}
 }
 
@@ -88,11 +87,11 @@ func New(yourAPIKey string) *Session {
 func (s *Session) Ask(question string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.values.Set("input", question)
+	s.Values.Set("input", question)
 	// Clear previous json, just in case
 	s.clear()
 	// Prepare the request.
-	req, err := http.NewRequest("GET", apiURL+s.values.Encode(), nil)
+	req, err := http.NewRequest("GET", apiURL+s.Values.Encode(), nil)
 	if err != nil {
 		return "", err
 	}
@@ -125,11 +124,8 @@ func (s *Session) Ask(question string) (string, error) {
 			return "", fmt.Errorf("Cleverbot API: Response status not OK, code %d", resp.StatusCode)
 		}
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if err := json.Unmarshal(body, &s.decoder); err != nil {
+
+	if err := json.NewDecoder(resp.Body).Decode(&s.decoder); err != nil {
 		return "", err
 	}
 	if _, ok := s.decoder["output"].(string); !ok {
@@ -139,7 +135,7 @@ func (s *Session) Ask(question string) (string, error) {
 		return "", fmt.Errorf("Cleverbot API: 'cs' does not exist or is not a string")
 	}
 	// Set session context id.
-	s.values.Set("cs", s.decoder["cs"].(string))
+	s.Values.Set("cs", s.decoder["cs"].(string))
 
 	return s.decoder["output"].(string), nil
 }
@@ -148,7 +144,7 @@ func (s *Session) Ask(question string) (string, error) {
 func (s *Session) Reset() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.values.Del("cs")
+	s.Values.Del("cs")
 	// Clear the json map
 	s.clear()
 }
@@ -212,4 +208,31 @@ func (s *Session) clear() {
 	for k := range s.decoder {
 		delete(s.decoder, k)
 	}
+}
+
+// Wackiness varies Cleverbot’s reply from sensible to wacky.
+// Accepted values between 0 and 100
+func (s *Session) Wackiness(val uint8) {
+	if val > 100 {
+		val = 100
+	}
+	s.Values.Set("cb_settings_tweak1", fmt.Sprint(val))
+}
+
+// Talkativeness varies Cleverbot’s reply from shy to talkative.
+// Accepted values between 0 and 100
+func (s *Session) Talkativeness(val uint8) {
+	if val > 100 {
+		val = 100
+	}
+	s.Values.Set("cb_settings_tweak2", fmt.Sprint(val))
+}
+
+// Attentiveness varies Cleverbot’s reply from self-centred to attentive.
+// Accepted values between 0 and 100
+func (s *Session) Attentiveness(val uint8) {
+	if val > 100 {
+		val = 100
+	}
+	s.Values.Set("cb_settings_tweak3", fmt.Sprint(val))
 }
