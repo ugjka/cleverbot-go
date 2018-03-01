@@ -4,7 +4,6 @@ package cleverbot
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -21,18 +20,31 @@ var (
 	apiURL   = protocol + host + resource
 )
 
+type cleverErr struct {
+	err    string
+	origin string
+}
+
+func (e *cleverErr) Error() string {
+	return e.err + " | " + e.origin
+}
+
 // Errors.
 var (
 	// ErrKeyNotValid is returned when API key is not valid.
-	ErrKeyNotValid = errors.New("Cleverbot API: key not valid")
+	ErrKeyNotValid = &cleverErr{err: "cleverbot api: key not valid"}
 	// ErrAPINotFound is returned when API returns 404.
-	ErrAPINotFound = errors.New("Cleverbot API: not found")
+	ErrAPINotFound = &cleverErr{err: "cleverbot api: not found"}
 	// ErrRequestTooLarge is returned when GET request to the api exceeds 16K.
-	ErrRequestTooLarge = errors.New("Cleverbot API: request too large. Please limit requests to 8KB")
+	ErrRequestTooLarge = &cleverErr{err: "cleverbot api: request too large. Please limit requests to 8KB"}
 	// ErrNoReply is returned when api is down.
-	ErrNoReply = errors.New("Cleverbot API: unable to get reply from API server, please contact us")
+	ErrNoReply = &cleverErr{err: "cleverbot api: unable to get reply from API server, please contact us"}
 	// ErrTooManyRequests is returned when there is too many requests made to the api.
-	ErrTooManyRequests = errors.New("Cleverbot API: Too many requests from client")
+	ErrTooManyRequests = &cleverErr{err: "cleverbot api: too many requests from client"}
+	// ErrStatusNotOK is returned when statuscode is not 200
+	ErrStatusNotOK = &cleverErr{err: "cleverbot api: response status not ok"}
+	// ErrInvalidJSON is returned when the cleverbot server sends malformed json
+	ErrInvalidJSON = &cleverErr{err: "cleverbot api: server sent malformed JSON"}
 )
 
 // QAPair contains question and answer pair strings of an interaction.
@@ -110,25 +122,33 @@ func (s *Session) Ask(question string) (string, error) {
 	// Check for errors.
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
+		ErrKeyNotValid.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrKeyNotValid
 	case http.StatusNotFound:
+		ErrAPINotFound.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrAPINotFound
 	case http.StatusRequestEntityTooLarge:
+		ErrRequestTooLarge.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrRequestTooLarge
 	case http.StatusBadGateway:
+		ErrNoReply.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrNoReply
 	case http.StatusGatewayTimeout:
+		ErrNoReply.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrNoReply
 	case http.StatusServiceUnavailable:
+		ErrTooManyRequests.origin = fmt.Sprintf("status code %d", resp.StatusCode)
 		return "", ErrTooManyRequests
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return "", fmt.Errorf("Cleverbot API: Response status not OK, code %d", resp.StatusCode)
+			ErrStatusNotOK.origin = fmt.Sprintf("status code %d", resp.StatusCode)
+			return "", ErrStatusNotOK
 		}
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&s.Decoded); err != nil {
-		return "", err
+		ErrInvalidJSON.origin = err.Error()
+		return "", ErrInvalidJSON
 	}
 	if _, ok := s.Decoded["output"].(string); !ok {
 		return "", fmt.Errorf("Cleverbot API: 'output' does not exist or is not a string")
