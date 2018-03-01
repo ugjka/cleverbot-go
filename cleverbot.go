@@ -62,10 +62,12 @@ func (q QAPairs) String() string {
 
 // Session is a cleverbot session.
 type Session struct {
-	mu      sync.Mutex
-	Client  *http.Client
-	Values  *url.Values
-	decoder map[string]interface{}
+	mu     sync.Mutex
+	Client *http.Client
+	//Request parameters
+	Values *url.Values
+	//Decoded json
+	Decoded map[string]interface{}
 }
 
 // New creates a new session.
@@ -125,19 +127,19 @@ func (s *Session) Ask(question string) (string, error) {
 		}
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&s.decoder); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&s.Decoded); err != nil {
 		return "", err
 	}
-	if _, ok := s.decoder["output"].(string); !ok {
+	if _, ok := s.Decoded["output"].(string); !ok {
 		return "", fmt.Errorf("Cleverbot API: 'output' does not exist or is not a string")
 	}
-	if _, ok := s.decoder["cs"].(string); !ok {
+	if _, ok := s.Decoded["cs"].(string); !ok {
 		return "", fmt.Errorf("Cleverbot API: 'cs' does not exist or is not a string")
 	}
 	// Set session context id.
-	s.Values.Set("cs", s.decoder["cs"].(string))
+	s.Values.Set("cs", s.Decoded["cs"].(string))
 
-	return s.decoder["output"].(string), nil
+	return s.Decoded["output"].(string), nil
 }
 
 // Reset resets the session, meaning a new Ask() call will appear as new conversation from bots point of view.
@@ -154,7 +156,7 @@ func (s *Session) Reset() {
 func (s *Session) InteractionCount() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if v, ok := s.decoder["interaction_count"].(string); ok {
+	if v, ok := s.Decoded["interaction_count"].(string); ok {
 		if count, err := strconv.Atoi(v); err == nil {
 			return count
 		}
@@ -167,7 +169,7 @@ func (s *Session) InteractionCount() int {
 func (s *Session) TimeElapsed() time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if v, ok := s.decoder["time_elapsed"].(string); ok {
+	if v, ok := s.Decoded["time_elapsed"].(string); ok {
 		if dur, err := time.ParseDuration(v + "s"); err == nil {
 			return dur
 		}
@@ -180,7 +182,7 @@ func (s *Session) TimeElapsed() time.Duration {
 func (s *Session) TimeTaken() time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if v, ok := s.decoder["time_taken"].(string); ok {
+	if v, ok := s.Decoded["time_taken"].(string); ok {
 		if dur, err := time.ParseDuration(v + "ms"); err == nil {
 			return dur
 		}
@@ -194,9 +196,9 @@ func (s *Session) History() QAPairs {
 	defer s.mu.Unlock()
 	var qa []QAPair
 	for i := 1; ; i++ {
-		if v, ok := s.decoder[fmt.Sprintf("interaction_%d_other", i)].(string); ok && v != "" {
-			qa = append([]QAPair{{s.decoder[fmt.Sprintf("interaction_%d", i)].(string),
-				s.decoder[fmt.Sprintf("interaction_%d_other", i)].(string)}}, qa...)
+		if v, ok := s.Decoded[fmt.Sprintf("interaction_%d_other", i)].(string); ok && v != "" {
+			qa = append([]QAPair{{s.Decoded[fmt.Sprintf("interaction_%d", i)].(string),
+				s.Decoded[fmt.Sprintf("interaction_%d_other", i)].(string)}}, qa...)
 		} else {
 			return qa
 		}
@@ -205,8 +207,8 @@ func (s *Session) History() QAPairs {
 
 func (s *Session) clear() {
 	// Clear the map
-	for k := range s.decoder {
-		delete(s.decoder, k)
+	for k := range s.Decoded {
+		delete(s.Decoded, k)
 	}
 }
 
