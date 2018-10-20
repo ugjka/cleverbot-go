@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/ugjka/cleverbot-go?status.svg)](https://godoc.org/github.com/ugjka/cleverbot-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ugjka/cleverbot-go)](https://goreportcard.com/report/github.com/ugjka/cleverbot-go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Donate](https://dl.ugjka.net/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UVTCZYQ3FVNCY)
 
 Cleverbot api wrapper written in Go
 
